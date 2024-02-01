@@ -1,0 +1,148 @@
+---
+apiVersion: automation.cloudbees.io/v1alpha1
+kind: action
+name: Create or update AWS Lambda Function
+description: Create or update an AWS Lambda function with code and Docker image
+inputs:
+  function-name:
+    description:  Give name for your lambda function
+    required: true
+  runtime:
+    description: Run time for your lambda function
+    required: false
+  iam-role-arn:
+    description: Give your role for the lambda function
+    required: true
+  handler:
+    description: The name of the method within your code that Lambda calls to run
+      your function (Required if the code is .zip)
+    required: false
+  desc:
+    description: description of the function
+    required: false
+  memory-size:
+    description: The amount of memory available to the function at runtime
+    required: false
+  timeout:
+    description: The amount of time (in seconds) that Lambda allows a function to
+      run before stopping it
+    required: false
+  vpc-config:
+    description: For network connectivity to AWS resources in a VPC, specify a list
+      of security groups and subnets in the VPC
+    required: false 
+  tags:
+    description: A list of tags to apply to the function
+    required: false
+  tracing-config:
+    description: Set Mode to Active to sample and trace a subset of incoming
+      requests with X-Ray
+    required: false
+  architectures:
+    description: The instruction set architecture that the function supports
+    required: false
+  code-signing-config-arn:
+    description: To enable code signing for this function, specify the ARN of a
+      code-signing configuration.
+    required: false
+  dead-letter-config:
+    description: A dead-letter queue configuration that specifies the queue or topic
+      where Lambda sends asynchronous events when they fail processing
+    required: false
+  ephemeral-storage:
+    description: The size of the functions /tmp directory in MB
+    required: false
+  kms-key-arn:
+    description: The ARN of the AWS Key Management Service (AWS KMS) customer
+      managed key that is used to encrypt your functions environment variables
+    required: false
+  layers:
+    description: A list of function layers to add to the functions execution environment
+    required: false
+  image-config:
+    description: Container image configuration values that override the values in
+      the container image Dockerfile
+    required: false
+  snap-start:
+    description: The functions SnapStart setting
+    required: false
+  file-system-configs:
+    description: Connection settings for an Amazon EFS file system
+    required: false
+  code-image:
+    description: The image of the code for the function
+    required: false
+  code-zip:
+    description: The path to the zip file of the code you are uploading
+    required: false
+  package-type:
+    description: The type of build input artifact. default value is zip
+    required: false
+    default: 'Zip'
+  s3-bucket:
+    description: The bucket name of the s3
+    required: false
+  s3-key:
+    description: The object name in the s3 bucket
+    required: false
+  s3-object-version:
+    description: The object version in the s3 bucket
+    required: false
+  publish:
+    description: The first version of the function during creation
+    required: false
+  environment:
+    description: Environment variables that are accessible from function code during execution
+    required: false         
+  dry-run:
+    description: This option provides a way to simulate an AWS CLI operation without making any changes, showing what actions would 
+      be performed if executed without actually applying those changes
+    required: false      
+  revision-id:
+    description: It update the function only if the revision ID matches the ID that’s specified. Use this option to avoid modifying a 
+      function that has changed since you last read it
+    required: false 
+
+runs:
+  using: composite
+  steps:
+    - id: createOrUpdateLambdaFunction
+      name: Create or update Lambda Function
+      uses: docker://public.ecr.aws/l7o7z1g8/actions/lambda-create-function:main-da4ff9c35d174bb8c770517159b3b63584fb4a73
+      shell: sh
+      env:
+        INPUT_FUNCTION_NAME: ${{ inputs.function-name}}
+        INPUT_RUNTIME: ${{ inputs.runtime }}
+        INPUT_ROLE_ARN: ${{ inputs.iam-role-arn }}
+        INPUT_HANDLER: ${{ inputs.handler }}
+        INPUT_DESCRIPTION: ${{ inputs.desc }}
+        INPUT_MEMORY_SIZE: ${{ inputs.memory-size }}
+        INPUT_TIMEOUT: ${{ inputs.timeout }}
+        INPUT_VPC_CONFIG: ${{ inputs.vpc-config }}
+        INPUT_TAGS: ${{ inputs.tags }}
+        INPUT_TRACING_CONFIG: ${{ inputs.tracing-config }}
+        INPUT_ARCHITECTURES: ${{ inputs.architectures }}
+        INPUT_CODE_SIGNING_CONFIG_ARN: ${{ inputs.code-signing-config-arn }}
+        INPUT_DEAD_LETTER_CONFIG: ${{ inputs.dead-letter-config }}
+        INPUT_EPHEMERAL_STORAGE: ${{ inputs.ephemeral-storage }}
+        INPUT_KMS_KEY_ARN: ${{ inputs.kms-key-arn }}
+        INPUT_LAYERS: ${{ inputs.layers }}
+        INPUT_IMAGE_CONFIG: ${{ inputs.image-config }}
+        INPUT_SNAP_START: ${{ inputs.snap-start }}
+        INPUT_FILE_SYSTEM_CONFIG: ${{ inputs.file-system-configs }}
+        INPUT_CODE_IMAGE: ${{ inputs.code-image }}
+        INPUT_CODE_ZIP: ${{ inputs.code-zip }}
+        INPUT_PACKAGE_TYPE: ${{ inputs.package-type }}
+        INPUT_S3_BUCKET: ${{ inputs.s3-bucket }}
+        INPUT_S3_KEY: ${{ inputs.s3-key }}
+        INPUT_S3_OBJECT_VERSION: ${{ inputs.s3-object-version }}
+        INPUT_PUBLISH: ${{ inputs.publish }}
+        INPUT_ENVIRONMENT: ${{ inputs.environment }}
+        INPUT_DRY_RUN: ${{ inputs.dry-run }}
+        INPUT_REVISION_ID: ${{ inputs.revision-id }}
+
+      run: |
+        set +x     
+        cd /app
+        # execute the aws lambda action 
+        ./lambda_create_function_app 

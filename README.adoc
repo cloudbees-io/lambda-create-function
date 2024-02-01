@@ -1,0 +1,240 @@
+= CloudBees action: Create or update an AWS Lambda function
+
+Use this action to create or update a function in AWS Lambda serverless architecture.
+Run code in AWS Lambda without provisioning or managing servers.
+
+== Prerequisites
+
+Add link:https://github.com/cloudbees-io/configure-aws-credentials[CloudBees action: Configure AWS credentials] to your YAML file to initialize the connection with your AWS credentials.
+
+== Inputs
+
+[cols="2a,1a,1a,3a",options="header"]
+.Input details
+|===
+
+| Input name
+| Data type
+| Required?
+| Description
+
+| `architectures`
+| JSON string
+| No
+| The instruction set architecture that the function supports.
+
+| `code-image`
+| String
+| Required only if `package-type: Image`.
+| The code image resource, such as the Amazon ECR repository URI.
+
+| `code-signing-config-arn`
+| String
+| No
+| The Amazon Resource Name (ARN) for a code-signing configuration.
+
+| `code-zip`
+| String
+| Required only if `package-type: Zip`.
+| The path to the ZIP file of the code to be uploaded.
+
+| `dead-letter-config`
+| JSON string
+| No
+| The location where the function sends asynchronous events that fail to process.
+
+| `desc`
+| String
+| No
+| The function description.
+
+| `dry-run`
+| Boolean
+| No
+| Enables preview of changes to AWS CLI operations before applying the changes.
+
+| `environment`
+| JSON string
+| No
+| The environment variables accessible from the function code during execution.
+
+| `ephemeral-storage`
+| JSON string
+| No
+| The size of the function `/tmp` directory.
+
+| `file-system-configs`
+| JSON string
+| No
+| The Amazon EFS file system connection settings.
+
+| `function-name`
+| String
+| Yes
+| The AWS Lambda function name.
+
+| `handler`
+| String
+| Required only if `package-type: Zip`.
+| The method name in uploaded code that Lambda calls to run the function.
+
+| `iam-role-arn`
+| String
+| Yes
+| The Identity and Access Management (IAM) name of the function’s execution role, in ARN format.
+
+| `image-config`
+| JSON string
+| No
+| The container image configuration values overriding the values in the container image Dockerfile.
+
+| `kms-key-arn`
+| String
+| No
+| The ARN of the AWS Key Management Service (KMS) customer-managed key used to encrypt your function's environment variables.
+
+| `layers`
+| JSON string
+| No
+| The list of function layers to add to the functions execution environment.
+
+| `memory-size`
+| Integer
+| No
+| The amount of memory available to the function at runtime.
+
+| `package-type`
+| String
+| No
+| The type of build input artifact. Options are `Zip` (ZIP file) and `Image` (container image).
+
+| `publish`
+| Boolean
+| No
+| Enables the first created version of the function.
+
+| `revision-id`
+| String
+| No
+| The revision ID, to require updating of function only if it matches the specified ID.
+
+| `runtime`
+| String
+| Required only if `package-type: Zip`.
+| The function runtime.
+
+| `s3-bucket`
+| String
+| Required only if using an AWS S3 bucket.
+| The S3 bucket name.
+
+| `s3-key`
+| String
+| Required only if using an AWS S3 bucket.
+| The S3 bucket object name.
+
+| `s3-object-version`
+| String
+| No
+| The S3 bucket object version.
+
+| `snap-start`
+| JSON string
+| No
+| The SnapStart configuration to run the function with a pre-initialized snapshot.
+
+| `tags`
+| JSON string
+| No
+| The function tag list.
+
+| `timeout`
+| Integer
+| No
+| The allowed amount of time, in seconds, that a function runs before it is stopped.
+
+| `tracing-config`
+| JSON string
+| No
+| The function's AWS X-Ray tracing configuration. To sample and record incoming requests, set Mode to Active.
+
+| `vpc-config`
+| JSON string
+| No
+| The VPC security groups and subnets for network connectivity to AWS resources.
+
+|===
+
+== Usage example
+
+=== To create or update an AWS Lambda function using an ECR image
+
+In your YAML file, add:
+
+[source,yaml]
+----
+      - id: createOrUpdateLambdaFunction
+        name: Create or update AWS lambda function
+        uses: cloudbees-io/lambda-create-function@v1
+        with:
+          iam-role-arn: arn:aws:iam::123456789012:role/my-lambda-actions
+          function-name: my-function
+          package-type: Image
+          code-image: 123456789012.dkr.ecr.us-west-2.amazonaws.com/hello-world-lambda:v1
+          architectures: '["x86_64"]'
+
+----
+
+=== To create or update an AWS Lambda function using an AWS S3 bucket
+
+In your YAML file, add:
+
+[source,yaml]
+----
+
+      - id: createOrUpdateLambdaFunction
+        name: Create or update AWS lambda function
+        uses: cloudbees-io/lambda-create-function@v1
+        with:
+          iam-role-arn: arn:aws:iam::123456789012:role/my-lambda-actions
+          function-name: my-function
+          package-type: Zip
+          handler: bootstrap
+          s3-bucket: my-lambda-actions
+          s3-key: hello-lambda/bootstrap.zip
+          s3-object-version: ""
+          architectures: '["x86_64"]'
+          runtime: provided.al2          
+
+----
+
+=== To create or update an AWS Lambda function using a local ZIP file
+
+In your YAML file, add:
+
+[source,yaml]
+----
+
+      - id: createOrUpdateLambdaFunction
+        name: Create or update AWS lambda function
+        uses: cloudbees-io/lambda-create-function@v1
+        with:
+          iam-role-arn: arn:aws:iam::123456789012:role/my-lambda-actions
+          function-name: my-function
+          package-type: Zip
+          handler: bootstrap          
+          code-zip: ${{ cloudbees.workspace }}/bootstrap.zip
+          architectures: '["x86_64"]'
+          runtime: provided.al2
+
+----
+
+== License
+
+This code is made available under the 
+link:https://opensource.org/license/mit/[MIT license].
+
+== References
+
+* Learn more about link:https://docs.cloudbees.com/docs/cloudbees-saas-platform-actions/latest/[using actions in CloudBees workflows].
+* Learn about link:https://docs.cloudbees.com/docs/cloudbees-saas-platform/latest/[the CloudBees platform].
