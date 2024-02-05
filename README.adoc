@@ -1,11 +1,23 @@
 = CloudBees action: Create or update an AWS Lambda function
 
-Use this action to create or update a function in AWS Lambda serverless architecture.
+Use this action to create or update a function in the AWS Lambda serverless architecture.
 Run code in AWS Lambda without provisioning or managing servers.
 
 == Prerequisites
 
-Add link:https://github.com/cloudbees-io/configure-aws-credentials[CloudBees action: Configure AWS credentials] to your YAML file to initialize the connection with your AWS credentials.
+Make sure to initialize the connection using your AWS credentials, by adding the following to your YAML file:
+
+[source,yaml]
+----
+      - name: Configure AWS credentials
+        uses: cloudbees-io/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.MY_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.MY_SECRET_KEY }}
+          aws-region: eu-west-3
+----
+
+Refer to link:https://github.com/cloudbees-io/configure-aws-credentials[CloudBees action: Configure AWS credentials] for more information.
 
 == Inputs
 
@@ -25,7 +37,7 @@ Add link:https://github.com/cloudbees-io/configure-aws-credentials[CloudBees act
 
 | `code-image`
 | String
-| Required only if `package-type: Image`.
+| Required only if using an image (`package-type: Image`).
 | The code image resource, such as the Amazon ECR repository URI.
 
 | `code-signing-config-arn`
@@ -35,23 +47,24 @@ Add link:https://github.com/cloudbees-io/configure-aws-credentials[CloudBees act
 
 | `code-zip`
 | String
-| Required only if `package-type: Zip`.
+| Required only if using a ZIP file (`package-type: Zip`).
 | The path to the ZIP file of the code to be uploaded.
 
 | `dead-letter-config`
 | JSON string
 | No
-| The location where the function sends asynchronous events that fail to process.
+| The location where the Lambda function sends asynchronous events that fail to process.
 
 | `desc`
 | String
 | No
-| The function description.
+| The Lambda function description.
 
 | `dry-run`
 | Boolean
 | No
-| Enables preview of changes to AWS CLI operations before applying the changes.
+| Default is `false`.
+Enables preview of changes to AWS CLI operations before applying the changes.
 
 | `environment`
 | JSON string
@@ -61,7 +74,7 @@ Add link:https://github.com/cloudbees-io/configure-aws-credentials[CloudBees act
 | `ephemeral-storage`
 | JSON string
 | No
-| The size of the function `/tmp` directory.
+| The size of the Lambda function `/tmp` directory.
 
 | `file-system-configs`
 | JSON string
@@ -75,7 +88,7 @@ Add link:https://github.com/cloudbees-io/configure-aws-credentials[CloudBees act
 
 | `handler`
 | String
-| Required only if `package-type: Zip`.
+| Required only if using a ZIP file (`package-type: Zip`).
 | The method name in uploaded code that Lambda calls to run the function.
 
 | `iam-role-arn`
@@ -86,7 +99,7 @@ Add link:https://github.com/cloudbees-io/configure-aws-credentials[CloudBees act
 | `image-config`
 | JSON string
 | No
-| The container image configuration values overriding the values in the container image Dockerfile.
+| The container image configuration values that override the container image Dockerfile values.
 
 | `kms-key-arn`
 | String
@@ -96,12 +109,12 @@ Add link:https://github.com/cloudbees-io/configure-aws-credentials[CloudBees act
 | `layers`
 | JSON string
 | No
-| The list of function layers to add to the functions execution environment.
+| The list of function layers to add to the Lambda functions execution environment.
 
 | `memory-size`
 | Integer
 | No
-| The amount of memory available to the function at runtime.
+| The amount of memory available to the Lambda function at runtime.
 
 | `package-type`
 | String
@@ -111,52 +124,56 @@ Add link:https://github.com/cloudbees-io/configure-aws-credentials[CloudBees act
 | `publish`
 | Boolean
 | No
-| Enables the first created version of the function.
+| Default is `true`. 
+Enables the first created version of the Lambda function.
 
 | `revision-id`
 | String
 | No
-| The revision ID, to require updating of function only if it matches the specified ID.
+| The latest updated revision ID.
+If specified, the Lambda function is only updated if the revision ID matches the latest updated revision ID.
+Use this option to avoid publishing a version if the function configuration has changed since you last updated it.
 
 | `runtime`
 | String
-| Required only if `package-type: Zip`.
-| The function runtime.
+| Required only if using a ZIP file (`package-type: Zip`).
+| The Lambda function runtime.
 
 | `s3-bucket`
 | String
-| Required only if using an AWS S3 bucket.
-| The S3 bucket name.
+| Required only if using an Amazon S3 bucket.
+| The Amazon S3 bucket name.
 
 | `s3-key`
 | String
-| Required only if using an AWS S3 bucket.
-| The S3 bucket object name.
+| Required only if using an Amazon S3 bucket.
+| The Amazon S3 bucket object name.
 
 | `s3-object-version`
 | String
 | No
-| The S3 bucket object version.
+| The Amazon S3 bucket object version.
 
 | `snap-start`
 | JSON string
 | No
-| The SnapStart configuration to run the function with a pre-initialized snapshot.
+| The SnapStart configuration to run the Lambda function with a pre-initialized snapshot.
 
 | `tags`
 | JSON string
 | No
-| The function tag list.
+| The Lambda function tag list.
 
 | `timeout`
 | Integer
 | No
-| The allowed amount of time, in seconds, that a function runs before it is stopped.
+| The allowed amount of time, in seconds, that a Lambda function runs before it is stopped.
 
 | `tracing-config`
 | JSON string
 | No
-| The function's AWS X-Ray tracing configuration. To sample and record incoming requests, set Mode to Active.
+| The AWS X-Ray tracing configuration in the Lambda function.
+To sample and record incoming requests, enable X-ray Active tracing in the Lambda functions console.
 
 | `vpc-config`
 | JSON string
@@ -165,16 +182,16 @@ Add link:https://github.com/cloudbees-io/configure-aws-credentials[CloudBees act
 
 |===
 
-== Usage example
+== Usage examples
 
-=== To create or update an AWS Lambda function using an ECR image
+=== Create/update an AWS Lambda function using an ECR image
 
 In your YAML file, add:
 
 [source,yaml]
 ----
-      - id: createOrUpdateLambdaFunction
-        name: Create or update AWS lambda function
+      - name: Create or update AWS lambda function with ECR
+        id: createOrUpdateLambdaFunctionWithECR
         uses: cloudbees-io/lambda-create-function@v1
         with:
           iam-role-arn: arn:aws:iam::123456789012:role/my-lambda-actions
@@ -185,15 +202,15 @@ In your YAML file, add:
 
 ----
 
-=== To create or update an AWS Lambda function using an AWS S3 bucket
+=== Create or update an AWS Lambda function using an AWS S3 bucket
 
 In your YAML file, add:
 
 [source,yaml]
 ----
 
-      - id: createOrUpdateLambdaFunction
-        name: Create or update AWS lambda function
+      - name: Create or update an AWS lambda function with S3
+        id: createOrUpdateLambdaFunctionWithS3
         uses: cloudbees-io/lambda-create-function@v1
         with:
           iam-role-arn: arn:aws:iam::123456789012:role/my-lambda-actions
@@ -208,15 +225,15 @@ In your YAML file, add:
 
 ----
 
-=== To create or update an AWS Lambda function using a local ZIP file
+=== Create or update an AWS Lambda function using a local ZIP file
 
 In your YAML file, add:
 
 [source,yaml]
 ----
 
-      - id: createOrUpdateLambdaFunction
-        name: Create or update AWS lambda function
+      - id: createOrUpdateLambdaFunctionWithZip
+        name: Create or update AWS lambda function with ZIP file
         uses: cloudbees-io/lambda-create-function@v1
         with:
           iam-role-arn: arn:aws:iam::123456789012:role/my-lambda-actions
@@ -224,7 +241,7 @@ In your YAML file, add:
           package-type: Zip
           handler: bootstrap          
           code-zip: ${{ cloudbees.workspace }}/bootstrap.zip
-          architectures: '["x86_64"]'
+          architectures: '["x86_64", "arm64"]'
           runtime: provided.al2
 
 ----
@@ -236,5 +253,5 @@ link:https://opensource.org/license/mit/[MIT license].
 
 == References
 
-* Learn more about link:https://docs.cloudbees.com/docs/cloudbees-saas-platform-actions/latest/[using actions in CloudBees workflows].
+* Learn more about link:https://docs.cloudbees.com/docs/cloudbees-saas-platform/latest/actions[using actions in CloudBees workflows].
 * Learn about link:https://docs.cloudbees.com/docs/cloudbees-saas-platform/latest/[the CloudBees platform].
