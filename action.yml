@@ -108,7 +108,7 @@ runs:
   steps:
     - id: createOrUpdateLambdaFunction
       name: Create or update Lambda Function
-      uses: docker://public.ecr.aws/l7o7z1g8/actions/lambda-create-function:main-9208bc00bafb15829c445e68b60f51c9d9cc3dfc
+      uses: docker://public.ecr.aws/l7o7z1g8/actions/lambda-create-function:main-035f49b376fb38cf1a3b86bbf66503fd2dc31ef3
       shell: sh
       env:
         INPUT_FUNCTION_NAME: ${{ inputs.function-name}}
